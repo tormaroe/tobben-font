@@ -63,7 +63,25 @@ def build():
     ]
 
     SCALE = 700.0 / 170.0
-    SIDE_BEARING = 60
+
+    # -------------------------------------------------------------------------
+    # SPACING METRICS
+    # -------------------------------------------------------------------------
+    # General default side bearing (applied to both Left and Right side bearings)
+    DEFAULT_SIDE_BEARING = 30
+
+    # Per-glyph overrides: { 'glyph_name': (left_side_bearing, right_side_bearing) }
+    # Easily fine-tune any letter that feels too tight or too loose!
+    CUSTOM_BEARINGS = {
+        'A': (-5, 30),      # Pulled tighter on the left to absorb ink artifact on the leg
+        'E': (30, 12),      # Tighter right margin so following letter hugs closer
+        'W': (30, 10),      # Tighter right margin (balances open space above diagonal)
+        'Y': (30, 0),       # Tucked close on the right under the open arm
+        'Aring': (30, 12),  # Tighter right margin for Å
+        'two': (48, 28),    # Increased left margin for '2' so preceding character doesn't crowd it
+        'five': (30, 12),   # Tighter right margin under top horizontal bar of 5
+        'comma': (6, 30),   # Tighter left margin (snugs against preceding character)
+    }
 
     glyf_dict = {}
     metrics_dict = {}
@@ -186,6 +204,8 @@ def build():
             pen = TTGlyphPen(None)
             char_min_x = box['x1']
             
+            lsb, rsb = CUSTOM_BEARINGS.get(gname, (DEFAULT_SIDE_BEARING, DEFAULT_SIDE_BEARING))
+
             if hierarchy is not None:
                 for ci, cnt in enumerate(contours):
                     if cv2.contourArea(cnt) < 15:
@@ -199,7 +219,7 @@ def build():
                     for pt in approx:
                         px = pt[0][0] + crop_x1
                         py = pt[0][1] + crop_y1
-                        fx = int((px - char_min_x) * SCALE + SIDE_BEARING)
+                        fx = int((px - char_min_x) * SCALE + lsb)
                         fy = int((anchor_y_pixel - py) * SCALE + target_font_y)
                         pts.append((fx, fy))
                     
@@ -221,8 +241,8 @@ def build():
             glyph_names.append(gname)
             
             glyph_w = int((box['x2'] - box['x1']) * SCALE)
-            advance_w = glyph_w + (SIDE_BEARING * 2)
-            metrics_dict[gname] = (advance_w, SIDE_BEARING)
+            advance_w = glyph_w + lsb + rsb
+            metrics_dict[gname] = (advance_w, lsb)
 
     print(f"[3/4] Compiling OpenType tables for {len(glyf_dict)} glyphs...")
     fb = FontBuilder(1000, isTTF=True)
@@ -269,10 +289,10 @@ def build():
     fb.setupNameTable({
         'familyName': 'Tobben',
         'styleName': 'Regular',
-        'uniqueFontIdentifier': 'Tobben-Regular:2026:v0.2',
+        'uniqueFontIdentifier': 'Tobben-Regular:2026:v0.203',
         'fullName': 'Tobben Regular',
         'psName': 'Tobben-Regular',
-        'version': 'Version 0.200',
+        'version': 'Version 0.203',
     })
     fb.setupOS2(
         sTypoAscender=850,

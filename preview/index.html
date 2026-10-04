@@ -6,8 +6,8 @@
   <style>
     @font-face {
       font-family: 'Tobben';
-      src: url('../dist/Tobben-Regular.woff') format('woff'),
-           url('../dist/Tobben-Regular.ttf') format('truetype');
+      src: url('../dist/Tobben-Regular.woff?v=34') format('woff'),
+           url('../dist/Tobben-Regular.ttf?v=34') format('truetype');
       font-weight: normal;
       font-style: normal;
     }
@@ -112,19 +112,63 @@
     .controls-bar {
       display: flex;
       gap: 1.5rem;
-      margin-top: 1rem;
+      margin-top: 1.25rem;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      background: #090d16;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .control-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .val-badge {
+      color: var(--accent);
+      font-family: monospace;
+      font-weight: 600;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+    }
+
+    .bearing-hint {
+      color: var(--accent-green);
+      font-size: 0.8rem;
+      font-family: monospace;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 0.5rem;
       align-items: center;
       flex-wrap: wrap;
+      width: 100%;
+      margin-top: 0.5rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
     }
 
     .sample-btn {
       background: #1e293b;
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 0.4rem 0.8rem;
+      padding: 0.35rem 0.75rem;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       transition: all 0.2s;
     }
 
@@ -132,6 +176,18 @@
       background: var(--accent);
       color: #000;
       border-color: var(--accent);
+    }
+
+    .preset-btn {
+      background: #162033;
+      border-color: #2e3e5c;
+    }
+
+    .preset-btn.active {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+      font-weight: 600;
     }
 
     .specimen-grid {
@@ -250,12 +306,37 @@
     <textarea id="sandbox" class="sandbox-textarea">THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG! 1234567890 ÆØÅ</textarea>
 
     <div class="controls-bar">
-      <div>
-        <label style="font-size: 0.9rem; color: var(--muted); margin-right: 0.5rem;">Size: <span id="size-val">42px</span></label>
+      <!-- Font Size Slider -->
+      <div class="control-group">
+        <label class="control-label">Size: <span id="size-val" class="val-badge">42px</span></label>
         <input type="range" id="size-slider" min="20" max="80" value="42">
       </div>
-      <div style="display: flex; gap: 0.5rem; margin-left: auto;">
+
+      <!-- Letter Spacing Slider -->
+      <div class="control-group" style="flex: 1; min-width: 260px;">
+        <label class="control-label">
+          Letter Spacing: <span id="spacing-val" class="val-badge">0.000em</span>
+          <span id="bearing-hint" class="bearing-hint">Current default: SIDE_BEARING = 30</span>
+        </label>
+        <input type="range" id="spacing-slider" min="-0.15" max="0.15" step="0.005" value="0.00">
+      </div>
+
+      <!-- Quick Spacing Presets -->
+      <div class="control-group">
+        <label class="control-label">Spacing Presets:</label>
+        <div style="display: flex; gap: 0.35rem;">
+          <button class="sample-btn preset-btn" data-val="-0.04" onclick="setSpacing(-0.04, this)">Compact (-0.04em)</button>
+          <button class="sample-btn preset-btn active" data-val="0.00" onclick="setSpacing(0.00, this)">Default (30 bearing)</button>
+          <button class="sample-btn preset-btn" data-val="0.04" onclick="setSpacing(0.04, this)">Relaxed (+0.04em)</button>
+          <button class="sample-btn preset-btn" data-val="0.08" onclick="setSpacing(0.08, this)">Loose (+0.08em)</button>
+        </div>
+      </div>
+
+      <!-- Sample Text Row -->
+      <div class="controls-row">
+        <span style="font-size: 0.82rem; color: var(--muted); margin-right: 0.25rem;">Sample Text:</span>
         <button class="sample-btn" onclick="setSample('VÆR SÅ GOD! HA EN FIN DAG.')">Norwegian</button>
+        <button class="sample-btn" onclick="setSample('THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG!')">Pangram</button>
         <button class="sample-btn" onclick="setSample('IF (A[I] == B && C != D) { RETURN TRUE; }')">Code</button>
         <button class="sample-btn" onclick="setSample('HELLO WORLD! 1234567890,.-!?')">Punctuation</button>
       </div>
@@ -307,14 +388,48 @@
   });
 
   const sandbox = document.getElementById('sandbox');
-  const slider = document.getElementById('size-slider');
+  const baselineText = document.querySelector('.baseline-text');
+  const sizeSlider = document.getElementById('size-slider');
   const sizeVal = document.getElementById('size-val');
+  const spacingSlider = document.getElementById('spacing-slider');
+  const spacingVal = document.getElementById('spacing-val');
+  const bearingHint = document.getElementById('bearing-hint');
 
-  slider.addEventListener('input', (e) => {
+  sizeSlider.addEventListener('input', (e) => {
     const sz = e.target.value;
     sandbox.style.fontSize = sz + 'px';
     sizeVal.textContent = sz + 'px';
   });
+
+  function updateLetterSpacing(val) {
+    const num = parseFloat(val);
+    const emStr = (num >= 0 ? '+' : '') + num.toFixed(3) + 'em';
+    sandbox.style.letterSpacing = num + 'em';
+    if (baselineText) baselineText.style.letterSpacing = num + 'em';
+    spacingVal.textContent = emStr;
+    spacingSlider.value = num;
+
+    // Base is 30 units. 1em = 1000 font units. Spacing change is split equally between LSB & RSB (+500 * em).
+    const equivBearing = Math.max(0, Math.round(30 + (num * 500)));
+    bearingHint.textContent = (num === 0) ? 'Current default: SIDE_BEARING = 30' : `Equivalent SIDE_BEARING: ${equivBearing}`;
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      const btnVal = parseFloat(btn.getAttribute('data-val'));
+      if (!isNaN(btnVal) && Math.abs(btnVal - num) < 0.005) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+
+  spacingSlider.addEventListener('input', (e) => {
+    updateLetterSpacing(e.target.value);
+  });
+
+  function setSpacing(val, btn) {
+    updateLetterSpacing(val);
+  }
 
   function setSample(txt) {
     sandbox.value = txt;
