@@ -1,0 +1,9 @@
+# Font generation and table manipulation
+fonttools>=4.40.0
+
+# Computer vision and contour extraction
+opencv-python>=4.8.0
+numpy>=1.24.0
+
+# Image loading and raster verification
+pillow>=10.0.0

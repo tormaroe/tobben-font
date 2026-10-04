@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tobben Font - Specimen & Playground</title>
+  <style>
+    @font-face {
+      font-family: 'Tobben';
+      src: url('../dist/Tobben-Regular.woff') format('woff'),
+           url('../dist/Tobben-Regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    :root {
+      --bg: #090d16;
+      --card-bg: #141c2e;
+      --accent: #38bdf8;
+      --accent-green: #4ade80;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --border: #23304a;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 2.5rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      max-width: 960px;
+      width: 100%;
+    }
+
+    .header {
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      margin: 0 0 0.5rem 0;
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .badge {
+      font-size: 0.85rem;
+      padding: 0.25rem 0.6rem;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid var(--accent);
+      border-radius: 9999px;
+      color: var(--accent);
+      font-weight: 600;
+      vertical-align: middle;
+      -webkit-text-fill-color: var(--accent);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+    }
+
+    .description {
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .sandbox-textarea {
+      font-family: 'Tobben', system-ui;
+      font-size: 42px;
+      line-height: 1.5;
+      background: #060910;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      color: #ffffff;
+      padding: 1.25rem;
+      width: 100%;
+      box-sizing: border-box;
+      outline: none;
+      min-height: 140px;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+
+    .sandbox-textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .controls-bar {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .sample-btn {
+      background: #1e293b;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .sample-btn:hover {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+
+    .specimen-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+      gap: 0.6rem;
+      margin-top: 1rem;
+    }
+
+    .glyph-tile {
+      background: #060910;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.6rem 0.2rem;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+
+    .glyph-tile:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .glyph-char {
+      font-family: 'Tobben';
+      font-size: 34px;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    .glyph-meta {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: monospace;
+      margin-top: 0.25rem;
+    }
+
+    .baseline-strip {
+      position: relative;
+      height: 130px;
+      background: #060910;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      padding-left: 2rem;
+      overflow: hidden;
+    }
+
+    .baseline-text {
+      font-family: 'Tobben';
+      font-size: 64px;
+      color: #fff;
+      position: relative;
+      z-index: 2;
+    }
+
+    .line-guide {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1px;
+    }
+
+    .guide-baseline {
+      bottom: 38px;
+      background: #ef4444;
+      border-top: 1px dashed #ef4444;
+    }
+    .guide-baseline::after {
+      content: 'Baseline (0)';
+      position: absolute;
+      right: 15px;
+      top: -16px;
+      font-size: 10px;
+      color: #ef4444;
+      font-family: monospace;
+    }
+
+    .guide-cap {
+      bottom: 92px;
+      background: #38bdf8;
+      border-top: 1px dashed #38bdf8;
+    }
+    .guide-cap::after {
+      content: 'Cap Height (700)';
+      position: absolute;
+      right: 15px;
+      top: -16px;
+      font-size: 10px;
+      color: #38bdf8;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Tobben Regular <span class="badge">v0.2</span></h1>
+    <p class="description">
+      Handmade font compiled directly from ink handwriting in <code>src/source/tobben.jpg</code>.
+    </p>
+  </div>
+
+  <!-- INTERACTIVE PLAYGROUND -->
+  <div class="card">
+    <div class="card-title">✍️ Interactive Typewriter</div>
+    <p class="description">
+      Type anything in the box below to test your font! Lowercase keys are automatically mapped to your glyphs.
+    </p>
+
+    <textarea id="sandbox" class="sandbox-textarea">THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG! 1234567890 ÆØÅ</textarea>
+
+    <div class="controls-bar">
+      <div>
+        <label style="font-size: 0.9rem; color: var(--muted); margin-right: 0.5rem;">Size: <span id="size-val">42px</span></label>
+        <input type="range" id="size-slider" min="20" max="80" value="42">
+      </div>
+      <div style="display: flex; gap: 0.5rem; margin-left: auto;">
+        <button class="sample-btn" onclick="setSample('VÆR SÅ GOD! HA EN FIN DAG.')">Norwegian</button>
+        <button class="sample-btn" onclick="setSample('IF (A[I] == B && C != D) { RETURN TRUE; }')">Code</button>
+        <button class="sample-btn" onclick="setSample('HELLO WORLD! 1234567890,.-!?')">Punctuation</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BASELINE ALIGNMENT CARD -->
+  <div class="card">
+    <div class="card-title">📐 Baseline & Alignment Check</div>
+    <p class="description">
+      All letters and numbers sit firmly on the red baseline (0) and reach up to the cap height (700).
+    </p>
+
+    <div class="baseline-strip">
+      <div class="line-guide guide-cap"></div>
+      <div class="line-guide guide-baseline"></div>
+      <div class="baseline-text">A B Q Æ Ø Å 1 , . - ! ' "</div>
+    </div>
+  </div>
+
+  <!-- GLYPH SPECIMEN GRID -->
+  <div class="card">
+    <div class="card-title">🗂️ Character Specimen (71 Glyphs)</div>
+    <p class="description">
+      Every vector contour extracted from your sheet of paper:
+    </p>
+    <div class="specimen-grid" id="specimen-grid"></div>
+  </div>
+</div>
+
+<script>
+  const chars = [
+    'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P',
+    'Q','R','S','T','U','V','W','X','Y','Z','Æ','Ø','Å',
+    '0','1','2','3','4','5','6','7','8','9',
+    ',','.','-','!','?','"','#','%','&','/','\\',
+    '(',')','[',']','{','}','=','+','<','>','@',':',';','_','$','|','*','\'','~'
+  ];
+
+  const grid = document.getElementById('specimen-grid');
+  chars.forEach(c => {
+    const tile = document.createElement('div');
+    tile.className = 'glyph-tile';
+    tile.innerHTML = `
+      <div class="glyph-char">${c}</div>
+      <div class="glyph-meta">${c.charCodeAt(0).toString(16).toUpperCase()}</div>
+    `;
+    grid.appendChild(tile);
+  });
+
+  const sandbox = document.getElementById('sandbox');
+  const slider = document.getElementById('size-slider');
+  const sizeVal = document.getElementById('size-val');
+
+  slider.addEventListener('input', (e) => {
+    const sz = e.target.value;
+    sandbox.style.fontSize = sz + 'px';
+    sizeVal.textContent = sz + 'px';
+  });
+
+  function setSample(txt) {
+    sandbox.value = txt;
+  }
+</script>
+
+</body>
+</html>
